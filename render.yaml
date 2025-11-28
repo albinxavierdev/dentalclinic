@@ -12,6 +12,7 @@ services:
         value: https://ukywqczdqlguxaacrhcr.supabase.co
       - key: SUPABASE_ANON_KEY
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreXdxY3pkcWxndXhhYWNyaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNDUyNDYsImV4cCI6MjA3OTkyMTI0Nn0.Wbf80pfDp01sqmBycX3Y7wfCRk8ief1jgGDavaMZrvw
+    nodeVersion: 22
 
   - type: web
     name: dental-clinic-frontend
@@ -26,3 +27,4 @@ services:
         value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreXdxY3pkcWxndXhhYWNyaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNDUyNDYsImV4cCI6MjA3OTkyMTI0Nn0.Wbf80pfDp01sqmBycX3Y7wfCRk8ief1jgGDavaMZrvw
       - key: VITE_API_URL
         value: https://dental-clinic-api.onrender.com
+    nodeVersion: 22

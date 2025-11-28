@@ -1,206 +1,222 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const db = new Database(path.join(__dirname, 'appointments.db'));
-
-// Create appointments table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS appointments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    service TEXT NOT NULL,
-    date TEXT NOT NULL,
-    time TEXT NOT NULL,
-    special_request TEXT,
-    status TEXT DEFAULT 'Pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-// Create settings table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS settings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT UNIQUE NOT NULL,
-    value TEXT NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-// Create services table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS services (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-
-// Insert default settings if not exists
-const defaultSettings = [
-  { key: 'clinic_name', value: 'Dental Clinic' },
-  { key: 'clinic_phone', value: '+91 98765 43210' },
-  { key: 'clinic_email', value: 'info@dentalclinic.com' },
-  { key: 'clinic_address', value: '123 Dental Street, Medical District, Mumbai - 400001' },
-  { key: 'opening_hours_weekday', value: '9:00 AM - 8:00 PM' },
-  { key: 'opening_hours_saturday', value: '9:00 AM - 6:00 PM' },
-  { key: 'opening_hours_sunday', value: '10:00 AM - 4:00 PM' }
-];
-
-const insertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
-defaultSettings.forEach(setting => {
-  insertSetting.run(setting.key, setting.value);
-});
-
-// Insert default services if not exists
-const defaultServices = [
-  { name: 'Root Canal', description: 'Save your natural tooth with our painless root canal treatment.' },
-  { name: 'Dental Implants', description: 'Permanent solution for missing teeth with natural look and feel.' },
-  { name: 'Cosmetic Dentistry', description: 'Enhance your smile with veneers, bonding, and more.' },
-  { name: 'Teeth Whitening', description: 'Brighten your smile with our safe and effective whitening.' },
-  { name: 'Orthodontics', description: 'Straighten your teeth with braces or clear aligners.' },
-  { name: 'General Checkup', description: 'Comprehensive dental examination and cleaning.' },
-  { name: 'Emergency Care', description: '24/7 emergency dental services.' }
-];
-
-const insertService = db.prepare('INSERT OR IGNORE INTO services (name, description) VALUES (?, ?)');
-defaultServices.forEach(service => {
-  insertService.run(service.name, service.description);
-});
+import { supabase } from './supabase.js';
 
 // ===== APPOINTMENTS =====
 
-export const getAllAppointments = () => {
-  const stmt = db.prepare('SELECT * FROM appointments ORDER BY created_at DESC');
-  return stmt.all();
+export const getAllAppointments = async () => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data;
 };
 
-export const getAppointmentById = (id) => {
-  const stmt = db.prepare('SELECT * FROM appointments WHERE id = ?');
-  return stmt.get(id);
+export const getAppointmentById = async (id) => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) throw error;
+  return data;
 };
 
-export const createAppointment = (data) => {
-  const stmt = db.prepare(`
-    INSERT INTO appointments (name, email, phone, service, date, time, special_request)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
-  const result = stmt.run(
-    data.name,
-    data.email,
-    data.phone,
-    data.service,
-    data.date,
-    data.time,
-    data.special_request || ''
-  );
-  return result.lastInsertRowid;
+export const createAppointment = async (data) => {
+  const { data: result, error } = await supabase
+    .from('appointments')
+    .insert([
+      {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        service: data.service,
+        date: data.date,
+        time: data.time,
+        special_request: data.special_request || ''
+      }
+    ])
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return result.id;
 };
 
-export const updateAppointment = (id, data) => {
-  const stmt = db.prepare(`
-    UPDATE appointments 
-    SET name = ?, email = ?, phone = ?, service = ?, date = ?, time = ?, special_request = ?
-    WHERE id = ?
-  `);
-  return stmt.run(data.name, data.email, data.phone, data.service, data.date, data.time, data.special_request || '', id);
+export const updateAppointment = async (id, data) => {
+  const { data: result, error } = await supabase
+    .from('appointments')
+    .update({
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      service: data.service,
+      date: data.date,
+      time: data.time,
+      special_request: data.special_request || ''
+    })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return result;
 };
 
-export const updateAppointmentStatus = (id, status) => {
-  const stmt = db.prepare('UPDATE appointments SET status = ? WHERE id = ?');
-  return stmt.run(status, id);
+export const updateAppointmentStatus = async (id, status) => {
+  const { data, error } = await supabase
+    .from('appointments')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
 };
 
-export const deleteAppointment = (id) => {
-  const stmt = db.prepare('DELETE FROM appointments WHERE id = ?');
-  return stmt.run(id);
+export const deleteAppointment = async (id) => {
+  const { error } = await supabase
+    .from('appointments')
+    .delete()
+    .eq('id', id);
+  
+  if (error) throw error;
+  return { message: 'Appointment deleted successfully' };
 };
 
 // ===== SETTINGS =====
 
-export const getAllSettings = () => {
-  const stmt = db.prepare('SELECT * FROM settings');
-  const rows = stmt.all();
-  return rows.reduce((acc, row) => {
-    acc[row.key] = row.value;
-    return acc;
-  }, {});
-};
-
-export const getSetting = (key) => {
-  const stmt = db.prepare('SELECT value FROM settings WHERE key = ?');
-  const row = stmt.get(key);
-  return row ? row.value : null;
-};
-
-export const updateSetting = (key, value) => {
-  const stmt = db.prepare(`
-    INSERT INTO settings (key, value) VALUES (?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
-  `);
-  return stmt.run(key, value, value);
-};
-
-export const updateMultipleSettings = (settings) => {
-  const stmt = db.prepare(`
-    INSERT INTO settings (key, value) VALUES (?, ?)
-    ON CONFLICT(key) DO UPDATE SET value = ?, updated_at = CURRENT_TIMESTAMP
-  `);
-
-  const transaction = db.transaction((settingsArray) => {
-    for (const [key, value] of Object.entries(settingsArray)) {
-      stmt.run(key, value, value);
-    }
+export const getAllSettings = async () => {
+  const { data, error } = await supabase
+    .from('settings')
+    .select('*');
+  
+  if (error) throw error;
+  
+  const settings = {};
+  data.forEach(row => {
+    settings[row.key] = row.value;
   });
+  return settings;
+};
 
-  transaction(settings);
+export const getSetting = async (key) => {
+  const { data, error } = await supabase
+    .from('settings')
+    .select('value')
+    .eq('key', key)
+    .single();
+  
+  if (error) throw error;
+  return data ? data.value : null;
+};
+
+export const updateSetting = async (key, value) => {
+  const { data, error } = await supabase
+    .from('settings')
+    .upsert({
+      key,
+      value,
+      updated_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+export const updateMultipleSettings = async (settings) => {
+  const updates = Object.entries(settings).map(([key, value]) => ({
+    key,
+    value,
+    updated_at: new Date().toISOString()
+  }));
+
+  const { data, error } = await supabase
+    .from('settings')
+    .upsert(updates)
+    .select();
+  
+  if (error) throw error;
+  return data;
 };
 
 // ===== SERVICES =====
 
-export const getAllServices = () => {
-  const stmt = db.prepare('SELECT * FROM services ORDER BY name');
-  return stmt.all();
+export const getAllServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .order('name');
+  
+  if (error) throw error;
+  return data;
 };
 
-export const getActiveServices = () => {
-  const stmt = db.prepare('SELECT * FROM services WHERE is_active = 1 ORDER BY name');
-  return stmt.all();
+export const getActiveServices = async () => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('is_active', true)
+    .order('name');
+  
+  if (error) throw error;
+  return data;
 };
 
-export const getServiceById = (id) => {
-  const stmt = db.prepare('SELECT * FROM services WHERE id = ?');
-  return stmt.get(id);
+export const getServiceById = async (id) => {
+  const { data, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) throw error;
+  return data;
 };
 
-export const createService = (data) => {
-  const stmt = db.prepare(`
-    INSERT INTO services (name, description, is_active)
-    VALUES (?, ?, ?)
-  `);
-  const result = stmt.run(data.name, data.description || '', data.is_active !== undefined ? data.is_active : 1);
-  return result.lastInsertRowid;
+export const createService = async (data) => {
+  const { data: result, error } = await supabase
+    .from('services')
+    .insert([
+      {
+        name: data.name,
+        description: data.description || '',
+        is_active: data.is_active !== undefined ? data.is_active : true
+      }
+    ])
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return result.id;
 };
 
-export const updateService = (id, data) => {
-  const stmt = db.prepare(`
-    UPDATE services 
-    SET name = ?, description = ?, is_active = ?
-    WHERE id = ?
-  `);
-  return stmt.run(data.name, data.description || '', data.is_active !== undefined ? data.is_active : 1, id);
+export const updateService = async (id, data) => {
+  const { data: result, error } = await supabase
+    .from('services')
+    .update({
+      name: data.name,
+      description: data.description || '',
+      is_active: data.is_active !== undefined ? data.is_active : true
+    })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return result;
 };
 
-export const deleteService = (id) => {
-  const stmt = db.prepare('DELETE FROM services WHERE id = ?');
-  return stmt.run(id);
+export const deleteService = async (id) => {
+  const { error } = await supabase
+    .from('services')
+    .delete()
+    .eq('id', id);
+  
+  if (error) throw error;
+  return { message: 'Service deleted successfully' };
 };

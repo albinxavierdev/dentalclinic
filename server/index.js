@@ -29,9 +29,9 @@ app.use(express.json());
 // ===== APPOINTMENTS API =====
 
 // Get all appointments
-app.get('/api/appointments', (req, res) => {
+app.get('/api/appointments', async (req, res) => {
     try {
-        const appointments = getAllAppointments();
+        const appointments = await getAllAppointments();
         res.json(appointments);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -39,9 +39,9 @@ app.get('/api/appointments', (req, res) => {
 });
 
 // Get appointment by ID
-app.get('/api/appointments/:id', (req, res) => {
+app.get('/api/appointments/:id', async (req, res) => {
     try {
-        const appointment = getAppointmentById(req.params.id);
+        const appointment = await getAppointmentById(req.params.id);
         if (appointment) {
             res.json(appointment);
         } else {
@@ -53,7 +53,7 @@ app.get('/api/appointments/:id', (req, res) => {
 });
 
 // Create new appointment
-app.post('/api/appointments', (req, res) => {
+app.post('/api/appointments', async (req, res) => {
     try {
         const { name, email, phone, service, date, time, special_request } = req.body;
 
@@ -62,8 +62,8 @@ app.post('/api/appointments', (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const id = createAppointment(req.body);
-        const appointment = getAppointmentById(id);
+        const id = await createAppointment(req.body);
+        const appointment = await getAppointmentById(id);
         res.status(201).json(appointment);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -71,7 +71,7 @@ app.post('/api/appointments', (req, res) => {
 });
 
 // Update appointment
-app.put('/api/appointments/:id', (req, res) => {
+app.put('/api/appointments/:id', async (req, res) => {
     try {
         const { name, email, phone, service, date, time, special_request } = req.body;
 
@@ -79,8 +79,8 @@ app.put('/api/appointments/:id', (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        updateAppointment(req.params.id, req.body);
-        const appointment = getAppointmentById(req.params.id);
+        await updateAppointment(req.params.id, req.body);
+        const appointment = await getAppointmentById(req.params.id);
         res.json(appointment);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -88,7 +88,7 @@ app.put('/api/appointments/:id', (req, res) => {
 });
 
 // Update appointment status
-app.patch('/api/appointments/:id/status', (req, res) => {
+app.patch('/api/appointments/:id/status', async (req, res) => {
     try {
         const { status } = req.body;
 
@@ -96,8 +96,7 @@ app.patch('/api/appointments/:id/status', (req, res) => {
             return res.status(400).json({ error: 'Status is required' });
         }
 
-        updateAppointmentStatus(req.params.id, status);
-        const appointment = getAppointmentById(req.params.id);
+        const appointment = await updateAppointmentStatus(req.params.id, status);
         res.json(appointment);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -105,9 +104,9 @@ app.patch('/api/appointments/:id/status', (req, res) => {
 });
 
 // Delete appointment
-app.delete('/api/appointments/:id', (req, res) => {
+app.delete('/api/appointments/:id', async (req, res) => {
     try {
-        deleteAppointment(req.params.id);
+        await deleteAppointment(req.params.id);
         res.json({ message: 'Appointment deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -117,9 +116,9 @@ app.delete('/api/appointments/:id', (req, res) => {
 // ===== SETTINGS API =====
 
 // Get all settings
-app.get('/api/settings', (req, res) => {
+app.get('/api/settings', async (req, res) => {
     try {
-        const settings = getAllSettings();
+        const settings = await getAllSettings();
         res.json(settings);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -127,9 +126,9 @@ app.get('/api/settings', (req, res) => {
 });
 
 // Get single setting
-app.get('/api/settings/:key', (req, res) => {
+app.get('/api/settings/:key', async (req, res) => {
     try {
-        const value = getSetting(req.params.key);
+        const value = await getSetting(req.params.key);
         if (value !== null) {
             res.json({ key: req.params.key, value });
         } else {
@@ -141,7 +140,7 @@ app.get('/api/settings/:key', (req, res) => {
 });
 
 // Update single setting
-app.put('/api/settings/:key', (req, res) => {
+app.put('/api/settings/:key', async (req, res) => {
     try {
         const { value } = req.body;
 
@@ -149,18 +148,18 @@ app.put('/api/settings/:key', (req, res) => {
             return res.status(400).json({ error: 'Value is required' });
         }
 
-        updateSetting(req.params.key, value);
-        res.json({ key: req.params.key, value });
+        const setting = await updateSetting(req.params.key, value);
+        res.json(setting);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // Update multiple settings
-app.post('/api/settings', (req, res) => {
+app.post('/api/settings', async (req, res) => {
     try {
-        updateMultipleSettings(req.body);
-        const settings = getAllSettings();
+        await updateMultipleSettings(req.body);
+        const settings = await getAllSettings();
         res.json(settings);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -170,9 +169,9 @@ app.post('/api/settings', (req, res) => {
 // ===== SERVICES API =====
 
 // Get all services
-app.get('/api/services', (req, res) => {
+app.get('/api/services', async (req, res) => {
     try {
-        const services = getAllServices();
+        const services = await getAllServices();
         res.json(services);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -180,9 +179,9 @@ app.get('/api/services', (req, res) => {
 });
 
 // Get active services only
-app.get('/api/services/active', (req, res) => {
+app.get('/api/services/active', async (req, res) => {
     try {
-        const services = getActiveServices();
+        const services = await getActiveServices();
         res.json(services);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -190,9 +189,9 @@ app.get('/api/services/active', (req, res) => {
 });
 
 // Get service by ID
-app.get('/api/services/:id', (req, res) => {
+app.get('/api/services/:id', async (req, res) => {
     try {
-        const service = getServiceById(req.params.id);
+        const service = await getServiceById(req.params.id);
         if (service) {
             res.json(service);
         } else {
@@ -204,7 +203,7 @@ app.get('/api/services/:id', (req, res) => {
 });
 
 // Create new service
-app.post('/api/services', (req, res) => {
+app.post('/api/services', async (req, res) => {
     try {
         const { name, description, is_active } = req.body;
 
@@ -212,8 +211,8 @@ app.post('/api/services', (req, res) => {
             return res.status(400).json({ error: 'Service name is required' });
         }
 
-        const id = createService(req.body);
-        const service = getServiceById(id);
+        const id = await createService(req.body);
+        const service = await getServiceById(id);
         res.status(201).json(service);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -221,7 +220,7 @@ app.post('/api/services', (req, res) => {
 });
 
 // Update service
-app.put('/api/services/:id', (req, res) => {
+app.put('/api/services/:id', async (req, res) => {
     try {
         const { name, description, is_active } = req.body;
 
@@ -229,8 +228,8 @@ app.put('/api/services/:id', (req, res) => {
             return res.status(400).json({ error: 'Service name is required' });
         }
 
-        updateService(req.params.id, req.body);
-        const service = getServiceById(req.params.id);
+        await updateService(req.params.id, req.body);
+        const service = await getServiceById(req.params.id);
         res.json(service);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -238,9 +237,9 @@ app.put('/api/services/:id', (req, res) => {
 });
 
 // Delete service
-app.delete('/api/services/:id', (req, res) => {
+app.delete('/api/services/:id', async (req, res) => {
     try {
-        deleteService(req.params.id);
+        await deleteService(req.params.id);
         res.json({ message: 'Service deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });

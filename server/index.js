@@ -1,5 +1,10 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import {
     getAllAppointments,
     getAppointmentById,
@@ -258,6 +263,14 @@ app.post('/api/admin/login', (req, res) => {
     } else {
         res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
+});
+
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Handle client-side routing - MUST be the last route
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {

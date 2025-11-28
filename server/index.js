@@ -28,7 +28,10 @@ const app = express();
 const PORT = 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ["https://dentalclinic-1-ngh0.onrender.com", "https://dentalclinic-607o.onrender.com"],
+  credentials: true
+}));
 app.use(express.json());
 
 // ===== APPOINTMENTS API =====

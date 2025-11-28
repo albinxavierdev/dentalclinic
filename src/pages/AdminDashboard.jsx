@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Trash2, Calendar, Clock, User, Mail, Phone, Menu, TrendingUp, TrendingDown, Users, CheckCircle } from 'lucide-react';
+import { api } from '../config/api.js';
 import AdminSidebar from '../components/AdminSidebar';
 
 const AdminDashboard = () => {
@@ -35,7 +36,7 @@ const AdminDashboard = () => {
 
     const fetchAppointments = async () => {
         try {
-            const response = await fetch('/api/appointments');
+            const response = await fetch(api.appointments);
             const data = await response.json();
             setAppointments(data);
             setFilteredAppointments(data);
@@ -67,7 +68,7 @@ const AdminDashboard = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            const response = await fetch(`/api/appointments/${id}/status`, {
+            const response = await fetch(`${api.appointments}/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus }),
@@ -87,7 +88,7 @@ const AdminDashboard = () => {
         }
 
         try {
-            const response = await fetch(`/api/appointments/${id}`, {
+            const response = await fetch(`${api.appointments}/${id}`, {
                 method: 'DELETE',
             });
 

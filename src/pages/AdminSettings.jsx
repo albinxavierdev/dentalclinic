@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, Save, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { api } from '../config/api.js';
 
 const AdminSettings = () => {
     const navigate = useNavigate();
@@ -25,8 +26,8 @@ const AdminSettings = () => {
     const fetchData = async () => {
         try {
             const [settingsRes, servicesRes] = await Promise.all([
-                fetch('/api/settings'),
-                fetch('/api/services')
+                fetch(api.settings),
+                fetch(api.services)
             ]);
 
             const settingsData = await settingsRes.json();
@@ -48,7 +49,7 @@ const AdminSettings = () => {
     const handleSaveSettings = async () => {
         setIsSaving(true);
         try {
-            await fetch('/api/settings', {
+            await fetch(api.settings, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(settings)
@@ -69,7 +70,7 @@ const AdminSettings = () => {
         }
 
         try {
-            const response = await fetch('/api/services', {
+            const response = await fetch(api.services, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newService)
@@ -86,7 +87,7 @@ const AdminSettings = () => {
 
     const handleUpdateService = async (id, data) => {
         try {
-            await fetch(`/api/services/${id}`, {
+            await fetch(`${api.services}/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
@@ -104,7 +105,7 @@ const AdminSettings = () => {
         }
 
         try {
-            await fetch(`/api/services/${id}`, { method: 'DELETE' });
+            await fetch(`${api.services}/${id}`, { method: 'DELETE' });
             fetchData();
         } catch (error) {
             console.error('Error deleting service:', error);

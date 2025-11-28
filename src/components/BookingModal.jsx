@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '../config/api.js';
 
 const BookingModal = ({ isOpen, onClose, onSuccess }) => {
     const [formData, setFormData] = useState({
@@ -68,7 +69,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess }) => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/appointments', {
+            const response = await fetch(api.appointments, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,6 +92,8 @@ const BookingModal = ({ isOpen, onClose, onSuccess }) => {
                 });
                 onClose();
             } else {
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
                 alert('Failed to book appointment. Please try again.');
             }
         } catch (error) {

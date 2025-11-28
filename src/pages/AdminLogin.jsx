@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User } from 'lucide-react';
+import { api } from '../config/api.js';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const AdminLogin = () => {
         setError('');
 
         try {
-            const response = await fetch('/api/admin/login', {
+            const response = await fetch(api.adminLogin, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

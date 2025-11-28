@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: dental-clinic-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        value: https://ukywqczdqlguxaacrhcr.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreXdxY3pkcWxndXhhYWNyaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNDUyNDYsImV4cCI6MjA3OTkyMTI0Nn0.Wbf80pfDp01sqmBycX3Y7wfCRk8ief1jgGDavaMZrvw
+
+  - type: web
+    name: dental-clinic-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://ukywqczdqlguxaacrhcr.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreXdxY3pkcWxndXhhYWNyaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNDUyNDYsImV4cCI6MjA3OTkyMTI0Nn0.Wbf80pfDp01sqmBycX3Y7wfCRk8ief1jgGDavaMZrvw
+      - key: VITE_API_URL
+        value: https://dental-clinic-api.onrender.com
